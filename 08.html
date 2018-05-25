@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Asynchronous Programming: The End of The Loop</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/6.2.0/rxjs.umd.js"></script>
+</head>
+
+<body>
+
+  <div id="parent" style="width: 200px; height: 200px; background-color: red">
+    <div id="widget" style="position: absolute; width: 150px; background-color: blue; color: white">Drag me</div>
+  </div>
+
+  <script>
+    const parent = document.querySelector('#parent');
+    const widget = document.querySelector('#widget');
+
+    const mouseDowns = rxjs.fromEvent(widget, 'mousedown');
+    const parentMouseMoves = rxjs.fromEvent(parent, 'mousemove');
+    const parentMouseUps = rxjs.fromEvent(parent, 'mouseup');
+
+    const drags = mouseDowns
+      .pipe(
+        rxjs.operators.map(e => parentMouseMoves.pipe(
+          rxjs.operators.takeUntil(parentMouseUps)
+        ))
+      ).pipe(
+        rxjs.operators.concatAll()
+      );
+
+    drags.subscribe(e => {
+      widget.style.left = `${e.clientX}px`;
+      widget.style.top = `${e.clientY}px`;
+    });
+  </script>
+
+</body>
+
+</html>
